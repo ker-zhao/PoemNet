@@ -6,6 +6,7 @@ import random
 import collections
 # import langconv
 
+cache_dir = "data"
 index_file = "data/char_index.json"
 data_set_file = "data/dataset.h5"
 poem_file = "all_poems.txt"
@@ -80,7 +81,9 @@ def get_type_char(content):
 
 
 def generate_dataset(use_cache=False):
-    if use_cache:
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
+    if use_cache and os.path.exists(index_file) and os.path.exists(data_set_file):
         return load_dataset()
 
     poem_list = []
