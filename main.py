@@ -14,9 +14,11 @@ checkpoint_dir = './training_checkpoints'
 batch_size = 64
 epochs = 50
 learning_rate = 0.001
-drop_rate = 0.05
+drop_rate = 0.1
 word_vec_size = 256
 rnn_size = 1024
+rnn_layers = 3
+dense_layers = 1
 
 idx2word, word2idx, x_train, y_train = utils.generate_dataset(True)
 vob_size = len(idx2word)
@@ -45,15 +47,14 @@ def create_model(is_sampling=False):
     model = tf.keras.Sequential()
     model.add(layers.Embedding(input_dim=vob_size, output_dim=word_vec_size,
                                batch_input_shape=[_batch_size, None]))
-    model.add(layers.LSTM(rnn_size, return_sequences=True, stateful=is_sampling))
-    # model.add(layers.Dropout(drop_rate))
-    model.add(layers.LSTM(rnn_size, return_sequences=True, stateful=is_sampling))
-    # model.add(layers.Dropout(drop_rate))
-    # model.add(layers.LSTM(rnn_size, return_sequences=True, stateful=is_sampling))
-    # model.add(layers.Dropout(drop_rate))
-    # model.add(layers.Dense(rnn_size, activation="relu"))
-    # model.add(layers.Dropout(drop_rate))
-
+    model.add(layers.Dropout(drop_rate / 2))
+    for i in range(rnn_layers):
+        model.add(layers.LSTM(rnn_size, return_sequences=True, stateful=is_sampling))
+        model.add(layers.Dropout(drop_rate))
+    for i in range(dense_layers):
+        model.add(layers.Dense(rnn_size, activation="relu"))
+        model.add(layers.Dropout(drop_rate))
+        # model.add(layers.BatchNormalization())
     model.add(layers.Dense(vob_size))
     return model
 
@@ -142,10 +143,10 @@ def format_poem(poem):
 
 
 def main():
-    # create_train()
+    create_train()
+    sampling()
     compose()
     # train()
-    # sampling()
 
 
 if __name__ == "__main__":
